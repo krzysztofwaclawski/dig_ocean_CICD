@@ -1,0 +1,62 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  reserve-and-create-droplet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up DigitalOcean CLI
+        run: |
+          curl -sL https://github.com/digitalocean/doctl/releases/download/v1.64.0/doctl-1.64.0-linux-amd64.tar.gz | tar -xzv
+          sudo mv doctl /usr/local/bin
+
+      - name: Reserve IP and Create Droplet
+        env:
+          DIGITALOCEAN_ACCESS_TOKEN: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          SSH_KEY_ID: ${{ secrets.SSH_KEY_ID }}
+        run: |
+          chmod +x reserve_and_create_droplet.sh
+          ./reserve_and_create_droplet.sh
+
+      - name: Save reserved IP
+        id: save_ip
+        run: echo "RESERVED_IP=$(cat reserved_ip.txt)" >> $GITHUB_ENV
+
+  build:
+    runs-on: ubuntu-latest
+    needs: reserve-and-create-droplet
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build Docker image
+        run: docker build -t my-app .
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Test Docker image
+        run: docker run my-app ./run-tests.sh
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Deploy to Droplet
+        env:
+          RESERVED_IP: ${{ env.RESERVED_IP }}
+        run: ssh root@$RESERVED_IP 'docker pull my-app && docker run -d my-app'
