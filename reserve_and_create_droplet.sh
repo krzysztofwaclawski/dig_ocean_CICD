@@ -3,12 +3,12 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# Reserve a new IP
-RESERVED_IP=$(doctl compute reserved-ip create --region nyc3 --format IP --no-header)
+# Reserve a new IP in the Frankfurt region
+RESERVED_IP=$(doctl compute reserved-ip create fra1 --format IP --no-header)
 
-# Create a new Droplet
+# Create a new Droplet in the Frankfurt region
 DROPLET_ID=$(doctl compute droplet create build-server \
-  --region nyc3 \
+  --region fra1 \
   --image ubuntu-20-04-x64 \
   --size s-1vcpu-1gb \
   --ssh-keys $SSH_KEY_ID \
