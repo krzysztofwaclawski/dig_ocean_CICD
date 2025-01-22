@@ -3,7 +3,7 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# Reserve a new IP in the Frankfurt region
+# Reserve a new IP in the Frankfurt region were issues with jq need to simplify that grep
 RESERVED_IP=$(doctl compute reserved-ip create fra1 --output json | grep -oP '(?<="ip":")[^"]*')
 
 # Create a new Droplet in the Frankfurt region
