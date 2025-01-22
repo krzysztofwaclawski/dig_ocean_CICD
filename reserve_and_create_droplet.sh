@@ -4,7 +4,7 @@
 set -e
 
 # Reserve a new IP in the Frankfurt region
-RESERVED_IP=$(doctl compute reserved-ip create fra1 --output json | jq -r '.ip')
+RESERVED_IP=$(doctl compute reserved-ip create fra1 --output json | jq -r '.reserved_ip.ip')
 
 # Create a new Droplet in the Frankfurt region
 DROPLET_ID=$(doctl compute droplet create build-server \
