@@ -15,7 +15,7 @@ DROPLET_ID=$(doctl compute droplet create build-server \
   --user-data-file setup-script.sh \
   --output json | grep -oP '(?<="id":)[0-9]+')
 
-# Assign the reserved IP to the new Droplet
+# Assign the reserved IP to the new Droplets
 doctl compute reserved-ip-action assign $RESERVED_IP --droplet-id $DROPLET_ID
 
 echo "Droplet created and assigned reserved IP: $RESERVED_IP"
